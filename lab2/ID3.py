@@ -29,7 +29,7 @@ class ID3DecisionTreeClassifier :
 
     # adds the node into the graph for visualisation (creates a dot-node)
     def add_node_to_graph(self, node, parentid=-1):
-        print('Added node: {}, parentid: {}'.format(node,parentid))
+        # print('Added node: {}, parentid: {}'.format(node,parentid))
         nodeString = ''
         for k in node:
             if ((node[k] != None) and (k != 'nodes')):
@@ -120,7 +120,6 @@ class ID3DecisionTreeClassifier :
                 cnt += 1
                 label = c
         if cnt == 1:
-            print('Sample belongs to one class') 
             node['label'] = label
             node['samples'] = len(samples)
             node['classCounts'] = nodeCounter
@@ -131,7 +130,6 @@ class ID3DecisionTreeClassifier :
         # If Attributes is empty, then
         # Return the single node tree Root, with label = most common class value in Samples.
         if len(attributes) == 0:
-            print('Attributes = 0')
             max_val = -1
             label = ''
             for c in nodeCounter:
@@ -149,32 +147,28 @@ class ID3DecisionTreeClassifier :
             A = max(info_gain.items(), key=operator.itemgetter(1))[0]
 
             # node['attribute'] = A
-
             for v in attributes[A]:
-                print(v)
                 samp = [val for val in samples if v in val]
                 targ = []
                 for i in range(len(samples)):
                     if v in samples[i]: 
                         targ.append(target_attributes[i])
                 if len(samp) == 0:
-                    print('Length samples = 0')
-                    node = self.new_ID3_node()
-                    node['label'] = max(target_attributes)
-                    node['samples'] = len(samp)
-                    node['classCounts'] = nodeCounter
-                    self.add_node_to_graph(node, parentid)
-                    return node
+                    new_node = self.new_ID3_node()
+                    new_node['label'] = max(target_attributes)
+                    new_node['samples'] = len(samp)
+                    new_node['classCounts'] = nodeCounter
+                    self.add_node_to_graph(new_node, node['id'])
+                    return new_node
                 else:
-                    print('New tree')
                     node['attribute'] = A
                     node['entropy'] = entro
                     node['samples'] = len(samples)
                     node['classCounts'] = nodeCounter
                     if len(attributes) != 0:
                         tmp_attr = dict([i for i in attributes.items() if i[0] != A])
-                    self.id3(samp, targ, tmp_attr, node['id'])
                     self.add_node_to_graph(node, parentid)
+                    self.id3(samp, targ, tmp_attr, node['id'])
         return node
 
 # if __name__ == "__main__":
