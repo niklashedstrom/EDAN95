@@ -1,7 +1,7 @@
 from collections import Counter
 from graphviz import Digraph
-
-
+import operator
+import numpy as np
 
 class ID3DecisionTreeClassifier :
 
@@ -29,6 +29,8 @@ class ID3DecisionTreeClassifier :
 
     # adds the node into the graph for visualisation (creates a dot-node)
     def add_node_to_graph(self, node, parentid=-1):
+        print('Added node: {}'.format(node))
+        print(parentid)
         nodeString = ''
         for k in node:
             if ((node[k] != None) and (k != 'nodes')):
@@ -49,22 +51,138 @@ class ID3DecisionTreeClassifier :
     def find_split_attr(self):
 
         # Change this to make some more sense
+        # INFORMATION GAIN 
         return None
 
 
     # the entry point for the recursive ID3-algorithm, you need to fill in the calls to your recursive implementation
     def fit(self, data, target, attributes, classes):
 
+        # data - [('y', 's', 'r'), ('y', 's', 'r'), ('g', 's', 'i'), ('g', 'l', 'i'), ('y', 'l', 'r'), ('y', 's', 'r'), ('y', 's', 'r'), ('y', 's', 'r'), ('g', 's', 'r'), ('y', 'l', 'r'), ('y', 'l', 'r'), ('y', 'l', 'r'), ('y', 'l', 'r'), ('y', 'l', 'r'), ('y', 's', 'i'), ('y', 'l', 'i')]
+        # target - ('+', '-', '+', '-', '+', '+', '+', '+', '-', '-', '+', '-', '-', '-', '+', '+')
+        # attributes - {'color': ['y', 'g', 'b'], 'size': ['s', 'l'], 'shape': ['r', 'i']}
+        # classes - ('+', '-')
+
+
         # fill in something more sensible here... root should become the output of the recursive tree creation
-        root = self.new_ID3_node()
-        self.add_node_to_graph(root)
+        root = self.id3(data, target, attributes, 0)
 
         return root
-
-
 
     def predict(self, data, tree) :
         predicted = list()
 
         # fill in something more sensible here... root should become the output of the recursive tree creation
         return predicted
+    
+    def entropy(self, samples, target_attributes, attribute):
+        node_counter = Counter(target_attributes)
+        values = [int(i[1]) for i in node_counter.items()]
+        total = sum([int(i[1]) for i in node_counter.items()])
+        ent = 0
+        for v in values:
+            ent += (v/total)*np.log2(v/total)
+        return -ent
+
+    def info_gain(self, entropy, samples, target_attributes, attributes):
+        info_dict = {}
+        tmp_samples = []
+        classes = set(target_attributes)
+        for i in range(len(samples)):
+            tmp_samples.append((*samples[i], target_attributes[i]))
+        for a in attributes:
+            tmp_dict = {i:{j:0 for j in classes} for i in attributes[a]}
+            lst = attributes[a]
+
+            for s in tmp_samples:
+                for l in lst:
+                    if l in s:
+                        tmp_dict[l][s[-1]] += 1
+
+            tot_ent = 0
+            for key in tmp_dict:
+                ent = 0
+                tot_sum = sum([int(i[1]) for i in tmp_dict[key].items()])
+                if tot_sum > 0:
+                    for val in [int(i[1]) for i in tmp_dict[key].items()]:
+                        # print('val: {}, sum: {}, div: {}'.format(val, tot_sum, val/tot_sum))
+                        if (val/tot_sum) != 0:
+                            ent += (val/tot_sum) * np.log2(val/tot_sum)
+                    tot_ent += -ent * tot_sum/len(samples)
+            info_dict[a] = entropy-tot_ent
+        return info_dict
+
+    def id3(self, samples, target_attributes, attributes, parentid):
+        node = self.new_ID3_node()
+
+        nodeCounter = Counter(target_attributes)
+        entro = self.entropy(samples, target_attributes, attributes)
+
+        # If all samples belong to one class <class_name>
+        # Return the single-node tree Root, with label = <class_name>.
+        cnt = 0
+        label = ''
+        for c in nodeCounter:
+            if nodeCounter[c] > 0:
+                cnt += 1
+                label = c
+        if cnt == 1: 
+            node['label'] = label
+            node['samples'] = len(samples)
+            node['classCounts'] = nodeCounter
+            node['entropy'] = entro
+            self.add_node_to_graph(node, parentid)
+            return node
+
+        # If Attributes is empty, then
+        # Return the single node tree Root, with label = most common class value in Samples.
+        if len(attributes) == 0:
+            max_val = -1
+            label = ''
+            for c in nodeCounter:
+                if nodeCounter[c] > max_val:
+                    max_val = nodeCounter[c]
+                    label = c
+            node['label'] = label
+            node['samples'] = len(samples)
+            node['classCounts'] = nodeCounter
+            node['entropy'] = entro
+            self.add_node_to_graph(node, parentid)
+            return node
+        else:
+            info_gain = self.info_gain(entro, samples, target_attributes, attributes)
+            A = max(info_gain.items(), key=operator.itemgetter(1))[0]
+
+            node['attribute'] = A
+
+            for v in attributes[A]:
+                samp = [val for val in samples if v in val]
+                targ = []
+                for i in range(len(samples)):
+                    if v in samples[i]: 
+                        targ.append(target_attributes[i])
+                if len(samp) == 0:
+                    node['label'] = max(target_attributes)
+                    node['samples'] = len(samp)
+                    node['classCounts'] = nodeCounter
+                    self.add_node_to_graph(node, parentid)
+                    return node
+                else:
+                    node['entropy'] = entro
+                    node['samples'] = len(samples)
+                    node['classCounts'] = nodeCounter
+                    attributes.pop(A)
+                    self.add_node_to_graph(node, parentid)
+                    return self.id3(samp, targ, attributes, node['id'])
+        self.add_node_to_graph(node, parentid)
+        return node
+
+# if __name__ == "__main__":
+    # data = [('y', 's', 'r'), ('y', 's', 'r'), ('g', 's', 'i'), ('g', 'l', 'i'), ('y', 'l', 'r'), ('y', 's', 'r'), ('y', 's', 'r'), ('y', 's', 'r'), ('g', 's', 'r'), ('y', 'l', 'r'), ('y', 'l', 'r'), ('y', 'l', 'r'), ('y', 'l', 'r'), ('y', 'l', 'r'), ('y', 's', 'i'), ('y', 'l', 'i')]
+    # target = ('+', '-', '+', '-', '+', '+', '+', '+', '-', '-', '+', '-', '-', '-', '+', '+')
+    # attributes = {'color': ['y', 'g', 'b'], 'size': ['s', 'l'], 'shape': ['r', 'i']}
+    # classes = ('+', '-')
+# 
+    # ID3 = ID3DecisionTreeClassifier()
+    # entropy = ID3.entropy(data, target, attributes)
+    # ID3.info_gain(entropy, data, target, attributes)
