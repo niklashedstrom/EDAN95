@@ -11,7 +11,7 @@ class ID3DecisionTreeClassifier :
         self.__nodeCounter = 0
 
         # the graph to visualise the tree
-        self.__dot = Digraph(comment='The Decision Tree')
+        self.__dot = Digraph(comment='The Decision Tree', strict=True)
 
         # suggested attributes of the classifier to handle training parameters
         self.__minSamplesLeaf = minSamplesLeaf
@@ -31,6 +31,7 @@ class ID3DecisionTreeClassifier :
     def add_node_to_graph(self, node, parentid=-1):
         # print('Added node: {}, parentid: {}'.format(node,parentid))
         nodeString = ''
+        
         for k in node:
             if ((node[k] != None) and (k != 'nodes')):
                 nodeString += "\n" + str(k) + ": " + str(node[k])
@@ -65,6 +66,8 @@ class ID3DecisionTreeClassifier :
     def predict(self, data, tree) :
         predicted = list()
 
+        edges = set([(i.split()[0], i.split()[2]) for i in self.__dot.body if '->' in i])
+        print(edges)
         # fill in something more sensible here... root should become the output of the recursive tree creation
         return predicted
     
