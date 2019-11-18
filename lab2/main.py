@@ -13,6 +13,13 @@ def main():
 
     myTree = id3.fit(data, target, attributes, classes)
     print(myTree)
+    # for i in myTree['nodes']:
+    #     print(i)
+    #     print(myTree['nodes'][i])
+    #     print('*' * 40)
+    #     print(myTree['nodes'][i]['nodes'])
+    #     print('-' * 40)
+        
     plot = id3.make_dot_data()
     plot.render("testTree")
     predicted = id3.predict(data2, myTree)

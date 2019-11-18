@@ -59,7 +59,7 @@ class ID3DecisionTreeClassifier :
     def fit(self, data, target, attributes, classes):
 
         # fill in something more sensible here... root should become the output of the recursive tree creation
-        root = self.id3(data, target, attributes, -1)
+        root = self.id3(data, target, attributes, -1, None, '')
 
         return root
 
@@ -107,8 +107,20 @@ class ID3DecisionTreeClassifier :
                     tot_ent += -ent * tot_sum/len(samples)
             info_dict[a] = entropy-tot_ent
         return info_dict
+    
+    def add_node(self, node, parentnode, v):
+        # print('Node: {}'.format(node))
+        # print('Parent: {}'.format(parentnode))
+        # print(v)
+        # print('-'*40)
+        if parentnode != None:
+            if parentnode['nodes'] == None:
+                parentnode['nodes'] = {v: node}
+            else:
+                parentnode['nodes'][v] = node
+                print(parentnode['nodes'][v])
 
-    def id3(self, samples, target_attributes, attributes, parentid):
+    def id3(self, samples, target_attributes, attributes, parentid, parentnode, attr):
         node = self.new_ID3_node()
 
         nodeCounter = Counter(target_attributes)
@@ -127,6 +139,7 @@ class ID3DecisionTreeClassifier :
             node['samples'] = len(samples)
             node['classCounts'] = nodeCounter
             node['entropy'] = entro
+            self.add_node(node, parentnode, attr)
             self.add_node_to_graph(node, parentid)
             return node
 
@@ -143,6 +156,7 @@ class ID3DecisionTreeClassifier :
             node['samples'] = len(samples)
             node['classCounts'] = nodeCounter
             node['entropy'] = entro
+            self.add_node(node, parentnode, attr)
             self.add_node_to_graph(node, parentid)
             return node
         else:
@@ -161,6 +175,8 @@ class ID3DecisionTreeClassifier :
                     new_node['label'] = max(target_attributes)
                     new_node['samples'] = len(samp)
                     new_node['classCounts'] = nodeCounter
+                    print(v)
+                    self.add_node(new_node, node, attr)
                     self.add_node_to_graph(new_node, node['id'])
                     return new_node
                 else:
@@ -170,8 +186,9 @@ class ID3DecisionTreeClassifier :
                     node['classCounts'] = nodeCounter
                     if len(attributes) != 0:
                         tmp_attr = dict([i for i in attributes.items() if i[0] != A])
+                    self.add_node(node, parentnode, attr)
                     self.add_node_to_graph(node, parentid)
-                    self.id3(samp, targ, tmp_attr, node['id'])
+                    self.id3(samp, targ, tmp_attr, node['id'], node, v)
         return node
 
 # if __name__ == "__main__":
