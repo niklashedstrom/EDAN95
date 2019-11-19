@@ -66,8 +66,13 @@ class ID3DecisionTreeClassifier :
     def predict(self, data, tree) :
         predicted = list()
 
-        edges = set([(i.split()[0], i.split()[2]) for i in self.__dot.body if '->' in i])
-        print(edges)
+        # Not needed, just need to go through the tree to search for the highest info gain going down
+        # unitl we hit a label that's not None. 
+        # edges = set([(i.split()[0], i.split()[2]) for i in self.__dot.body if '->' in i])
+        # print(edges)
+
+        
+
         # fill in something more sensible here... root should become the output of the recursive tree creation
         return predicted
     
@@ -109,16 +114,11 @@ class ID3DecisionTreeClassifier :
         return info_dict
     
     def add_node(self, node, parentnode, v):
-        # print('Node: {}'.format(node))
-        # print('Parent: {}'.format(parentnode))
-        # print(v)
-        # print('-'*40)
         if parentnode != None:
             if parentnode['nodes'] == None:
                 parentnode['nodes'] = {v: node}
             else:
                 parentnode['nodes'][v] = node
-                print(parentnode['nodes'][v])
 
     def id3(self, samples, target_attributes, attributes, parentid, parentnode, attr):
         node = self.new_ID3_node()
@@ -175,8 +175,7 @@ class ID3DecisionTreeClassifier :
                     new_node['label'] = max(target_attributes)
                     new_node['samples'] = len(samp)
                     new_node['classCounts'] = nodeCounter
-                    print(v)
-                    self.add_node(new_node, node, attr)
+                    self.add_node(new_node, node, v)
                     self.add_node_to_graph(new_node, node['id'])
                     return new_node
                 else:
