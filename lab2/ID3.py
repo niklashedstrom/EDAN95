@@ -71,10 +71,21 @@ class ID3DecisionTreeClassifier :
         # edges = set([(i.split()[0], i.split()[2]) for i in self.__dot.body if '->' in i])
         # print(edges)
 
-        
+        for d in data:
+            predicted.append(self.find_label(d, tree, tree['label']))
 
         # fill in something more sensible here... root should become the output of the recursive tree creation
         return predicted
+
+    def find_label(self, data, tree, label):
+        # data = (d,d,d)
+        # tree, bunch of nodes
+        if label != None:
+            return label
+        else:
+            for t in tree['nodes']:
+                if t in data:
+                    return self.find_label(data, tree['nodes'][t], tree['nodes'][t]['label'])
     
     def entropy(self, samples, target_attributes, attribute):
         node_counter = Counter(target_attributes)

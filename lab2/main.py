@@ -9,17 +9,24 @@ def main():
 
     attributes, classes, data, target, data2, target2 = td.ToyData().get_data()
 
+    digits = datasets.load_digits()
+
+    split = int(0.7 * digits.data.shape[0])
+    train_feature = digits.data[:split]
+    train_label = digits.target[:split]
+    test_feature = digits.data[split:]
+    test_label = digits.target[split:]
+
     id3 = ID3.ID3DecisionTreeClassifier()
 
-    myTree = id3.fit(data, target, attributes, classes)
-    print(myTree)
-    # for i in myTree['nodes']:
-    #     print(i)
-    #     print(myTree['nodes'][i])
-    #     print('*' * 40)
-    #     print(myTree['nodes'][i]['nodes'])
-    #     print('-' * 40)
+    for i in range(len(test_feature)):
+        print(test_feature[i])
+        print(test_label[i])
         
+
+    # myTree = id3.fit(data, target, attributes, classes)
+    myTree = id3.fit(train_feature, train_label, attributes, classes)
+    print(myTree)
     plot = id3.make_dot_data()
     plot.render("testTree")
     predicted = id3.predict(data2, myTree)
