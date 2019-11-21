@@ -12,16 +12,23 @@ def main():
     digits = datasets.load_digits()
 
     split = int(0.7 * digits.data.shape[0])
-    train_feature = digits.data[:split]
-    train_label = digits.target[:split]
+    train_feature = digits.data[:split].tolist()
+    train_label = digits.target[:split].tolist()
     test_feature = digits.data[split:]
     test_label = digits.target[split:]
 
+    attributes = {}
+
+    for i in range(64):
+        attributes[i] = list(range(17))
+
+    print(attributes)
+
     id3 = ID3.ID3DecisionTreeClassifier()
 
-    for i in range(len(test_feature)):
-        print(test_feature[i])
-        print(test_label[i])
+    # for i in range(len(test_feature)):
+    #     print(test_feature[i])
+    #     print(test_label[i])
         
 
     # myTree = id3.fit(data, target, attributes, classes)

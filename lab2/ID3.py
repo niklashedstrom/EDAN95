@@ -137,6 +137,8 @@ class ID3DecisionTreeClassifier :
         nodeCounter = Counter(target_attributes)
         entro = self.entropy(samples, target_attributes, attributes)
 
+        # print(attr)
+
         # If all samples belong to one class <class_name>
         # Return the single-node tree Root, with label = <class_name>.
         cnt = 0
