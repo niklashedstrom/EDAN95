@@ -10,7 +10,7 @@ from keras.applications import VGG16
 
 def extract_features(directory, sample_count):
     features = np.zeros(shape=(sample_count, 4, 4, 512))
-    labels = np.zeros(shape=(sample_count))
+    labels = np.zeros(shape=(sample_count, 5))
     generator = datagen.flow_from_directory(
     directory,
     target_size=(150, 150),
@@ -19,12 +19,8 @@ def extract_features(directory, sample_count):
     
     i=0
     for inputs_batch, labels_batch in generator:
-        #print(inputs_batch)
-        #print(labels_batch)
-        #print("-" * 20)
         features_batch = conv_base.predict(inputs_batch)
         features[i * batch_size : (i + 1) * batch_size] = features_batch
-        print(features_batch)
         labels[i * batch_size : (i + 1) * batch_size] = labels_batch
         i += 1
         if i * batch_size >= sample_count:
