@@ -19,6 +19,7 @@ def extract_features(directory, sample_count):
     
     i=0
     for inputs_batch, labels_batch in generator:
+        print('yaho + {}'.format(i))
         features_batch = conv_base.predict(inputs_batch)
         features[i * batch_size : (i + 1) * batch_size] = features_batch
         labels[i * batch_size : (i + 1) * batch_size] = labels_batch
@@ -47,6 +48,7 @@ test_dir = 'flowers_split/test'
 train_features, train_labels = extract_features(train_dir, 2595)
 validation_features, validation_labels = extract_features(validation_dir, 865)
 test_features, test_labels = extract_features(test_dir, 865)
+
 train_features = np.reshape(train_features, (2595, 4*4* 512))
 validation_features = np.reshape(validation_features, (865, 4*4* 512))
 test_features = np.reshape(test_features, (865, 4*4* 512))
@@ -54,14 +56,25 @@ test_features = np.reshape(test_features, (865, 4*4* 512))
 model = models.Sequential()
 model.add(layers.Dense(256, activation='relu', input_dim=4 * 4 * 512))
 model.add(layers.Dropout(0.5))
-model.add(layers.Dense(1, activation='softmax'))
-model.compile(optimizer=optimizers.RMSprop(lr=2e-5),
-loss='categorical_crossentropy',
-metrics=['acc'])
-history = model.fit(train_features, train_labels,
-epochs=30,
-batch_size=batch_size,
-validation_data=(validation_features, validation_labels))
+model.add(layers.Dense(5, activation='softmax'))
 
-test_loss, test_acc = model.evaluate_generator(test_generator, steps=100)
-print('test acc:', test_acc)
+model.compile(optimizer=optimizers.RMSprop(lr=2e-5),
+    loss='categorical_crossentropy',
+    metrics=['acc'])
+
+history = model.fit(train_features, train_labels,
+    epochs=30,
+    batch_size=batch_size,
+    validation_data=(validation_features, validation_labels))
+
+
+
+results = model.evaluate(test_features, test_labels, batch_size=batch_size)
+print('test loss, test acc:', results)
+
+# Y_pred = model.predict_generator((validation_features, validation_labels)), 173)
+# y_pred = np.argmax(Y_pred, axis=1)
+#print('test acc:', test_acc)
+# print('test loss:', test_loss)
+# print('Confusion Matrix')
+# print(confusion_matrix((validation_features, validation_labels)).classes, y_pred))
