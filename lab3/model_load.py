@@ -8,7 +8,9 @@ from sklearn.metrics import classification_report, confusion_matrix
 
 if __name__ == "__main__":
 
-    model = load_model("flowers3.h5")
+    s = "flowers4.h5"
+    
+    model = load_model(s)
 
     
     test_datagen = ImageDataGenerator(rescale=1. / 255) 
@@ -23,14 +25,14 @@ if __name__ == "__main__":
     test_generator = test_datagen.flow_from_directory(
         'flowers_split/test',
         target_size=(150, 150),
-        batch_size=15,
+        batch_size=5,
         class_mode='categorical')
-
+    print(s)
     test_loss, test_acc = model.evaluate_generator(test_generator, steps=100)
     print('test acc:', test_acc)
+    print('test loss:', test_loss)
     Y_pred = model.predict_generator(validation_generator, 173)
     y_pred = np.argmax(Y_pred, axis=1)
-    print('test acc:', test_acc)
     print('Confusion Matrix')
     print(confusion_matrix(validation_generator.classes, y_pred))
 

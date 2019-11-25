@@ -28,9 +28,9 @@ def train():
 
 
     train_datagen = ImageDataGenerator(rescale=1. / 255,
-    rotation_range=80,
-    width_shift_range=0.2,
-    height_shift_range=0.2,
+    rotation_range=120,
+    width_shift_range=0.5,
+    height_shift_range=0.5,
     shear_range=0.2,
     zoom_range=0.2,
     horizontal_flip=True,
@@ -60,7 +60,7 @@ def train():
 
         
 
-    model.save('flowers3.h5')
+    model.save('flowers4.h5')
 
 
     test_generator = test_datagen.flow_from_directory(
@@ -73,6 +73,7 @@ def train():
     Y_pred = model.predict_generator(validation_generator, 173)
     y_pred = np.argmax(Y_pred, axis=1)
     print('test acc:', test_acc)
+    print('test loss:', test_loss)
     print('Confusion Matrix')
     print(confusion_matrix(validation_generator.classes, y_pred))
     

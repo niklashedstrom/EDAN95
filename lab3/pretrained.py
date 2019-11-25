@@ -5,6 +5,7 @@ from keras import models
 from keras import layers
 from keras import optimizers
 from keras.applications import VGG16
+from sklearn.metrics import confusion_matrix
     
 
 
@@ -39,6 +40,13 @@ input_shape=(150, 150, 3))
 batch_size = 15
 
 datagen = ImageDataGenerator(rescale=1. / 255)
+    #rotation_range=40,
+    #width_shift_range=0.2,
+    #height_shift_range=0.2,
+    #shear_range=0.2,
+    #zoom_range=0.2,
+    #horizontal_flip=True,
+    #fill_mode='nearest')
 
 train_dir = "flowers_split/train"
 validation_dir = 'flowers_split/validation'
@@ -67,14 +75,15 @@ history = model.fit(train_features, train_labels,
     batch_size=batch_size,
     validation_data=(validation_features, validation_labels))
 
-
+model.save("pretrained.h5")
 
 results = model.evaluate(test_features, test_labels, batch_size=batch_size)
 print('test loss, test acc:', results)
 
-# Y_pred = model.predict_generator((validation_features, validation_labels)), 173)
-# y_pred = np.argmax(Y_pred, axis=1)
+Y_pred = model.predict(validation_features, batch_size=batch_size)
+y_pred = np.argmax(Y_pred, axis=1)
+y_test = np.argmax(validation_labels, axis=1)
 #print('test acc:', test_acc)
 # print('test loss:', test_loss)
-# print('Confusion Matrix')
-# print(confusion_matrix((validation_features, validation_labels)).classes, y_pred))
+print('Confusion Matrix')
+print(confusion_matrix(y_test, y_pred))
