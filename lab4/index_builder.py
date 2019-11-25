@@ -1,6 +1,9 @@
 from datasets import load_conll2003_en
 from conll_dictorizer import CoNLLDictorizer
 from dictionizer import dictionize
+from sklearn.feature_extraction import DictVectorizer
+
+import numpy as np
 
 def build_sequences(dic):
     X, Y = [], []
@@ -30,6 +33,31 @@ if __name__ == "__main__":
 
     X, Y = build_sequences(train_dict)
 
-    vocabulary = vocabulary(train_dict, dictionize('glove.6B.100d.txt'))
-    print(vocabulary)
-    print(len(vocabulary))
+    dic = dictionize('glove.6B.100d.txt')
+
+    vocabulary = vocabulary(train_dict, dic)
+
+    tmp_y = []
+    for y in Y: 
+        for y_i in y:
+            tmp_y.append(y_i)
+
+    rev_word_idx = dict(enumerate(vocabulary, start=2))
+    word_idx = {v: k for k, v in rev_word_idx.items()}
+
+    rev_ner_id = dict(enumerate(set(tmp_y), start=2))
+    ner_idx = {v: k for k, v in rev_ner_id.items()}
+
+    M = len(vocabulary) + 2
+    N = 100
+    matrix = np.random.rand(M, N)
+
+    for word in vocabulary:
+        if word in dic.keys():
+            matrix[word_idx[word]] = dic[word]
+
+    dict_vect = DictVectorizer(sparse=False)
+
+    X_test = dict_vect.fit_transform(X)
+
+    print(X_test)
