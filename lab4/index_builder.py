@@ -2,6 +2,7 @@ from datasets import load_conll2003_en
 from conll_dictorizer import CoNLLDictorizer
 from dictionizer import dictionize
 from sklearn.feature_extraction import DictVectorizer
+from keras.preprocessing.sequence import pad_sequences
 
 import numpy as np
 
@@ -58,6 +59,17 @@ if __name__ == "__main__":
 
     dict_vect = DictVectorizer(sparse=False)
 
-    X_test = dict_vect.fit_transform(X)
+    #Ta X och gör om till index-värden
+    X_idx = []
+    for x in X:
+        x_idx = []
+        for l in x:
+            #Get the value, if not in word_idx => 0 else value
+            if l in word_idx:
+                x_idx.append(word_idx[l])
+            else:
+                x_idx.append(0)
+        X_idx.append(x_idx)
 
-    print(X_test)
+    padded = pad_sequences(X_idx)
+    print(padded)
