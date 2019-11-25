@@ -16,7 +16,6 @@ def load_conll2009_pos():
     return train_sentences, dev_sentences, test_sentences, column_names
 
 
-
 def load_conll2003_en():
     train_file = 'NER-data/eng.train'
     dev_file = 'NER-data/eng.valid'
