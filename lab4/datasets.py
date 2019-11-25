@@ -16,17 +16,11 @@ def load_conll2009_pos():
     return train_sentences, dev_sentences, test_sentences, column_names
 
 
-vilde = False
-if vilde:
-    BASE_DIR = '/home/pierre/Cours/EDAN20/corpus/CoNLL2003/'
-else:
-    BASE_DIR = '/Users/pierre/Projets/Corpora/CoNLL2003/'
-
 
 def load_conll2003_en():
-    train_file = BASE_DIR + 'NER-data/eng.train'
-    dev_file = BASE_DIR + 'NER-data/eng.valid'
-    test_file = BASE_DIR + 'NER-data/eng.test'
+    train_file = 'NER-data/eng.train'
+    dev_file = 'NER-data/eng.valid'
+    test_file = 'NER-data/eng.test'
     column_names = ['form', 'ppos', 'pchunk', 'ner']
     train_sentences = open(train_file, encoding='utf8').read().strip()
     dev_sentences = open(dev_file, encoding='utf8').read().strip()
