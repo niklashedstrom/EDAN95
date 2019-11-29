@@ -4,6 +4,9 @@ from dictionizer import dictionize
 from sklearn.feature_extraction import DictVectorizer
 from keras.preprocessing.sequence import pad_sequences
 
+from keras import models, layers
+from keras.layers import SimpleRNN, Dense
+
 import numpy as np
 
 def build_sequences(dic):
@@ -50,6 +53,7 @@ if __name__ == "__main__":
     ner_idx = {v: k for k, v in rev_ner_id.items()}
 
     M = len(vocabulary) + 2
+    print(M)
     N = 100
     matrix = np.random.rand(M, N)
 
@@ -71,5 +75,38 @@ if __name__ == "__main__":
                 x_idx.append(0)
         X_idx.append(x_idx)
 
-    padded = pad_sequences(X_idx)
-    print(padded)
+    Y_idx = []
+    for y in Y:
+        y_idx = []
+        for l in y:
+            if l in ner_idx:
+                y_idx.append(ner_idx[l])
+            else:
+                y_idx.append(0)
+        Y_idx.append(y_idx)
+
+    padded_x = pad_sequences(X_idx, maxlen=150)
+    print(padded_x)
+
+    padded_y = pad_sequences(Y_idx, maxlen=150)
+    print(padded_y)
+
+    model = models.Sequential()
+    model.add(layers.Embedding(
+        M,
+        N,
+        mask_zero=True,
+        input_length=None
+    ))
+    # model.layers[0].set_weights((matrix))
+
+    model.add(SimpleRNN(100, return_sequences=True))
+    model.add(Dense(len(ner_idx), activation='softmax'))
+
+    model.compile(loss='categorical_crossentropy',
+                optimizer='rmsprop',
+                metrics=['acc'])
+    
+    model.summary()
+
+    model.fit(X, Y, epochs=2, batch_size=128)
