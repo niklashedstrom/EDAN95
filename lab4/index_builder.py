@@ -5,6 +5,7 @@ from sklearn.feature_extraction import DictVectorizer
 from keras.preprocessing.sequence import pad_sequences
 
 from keras import models, layers
+from keras.utils import to_categorical
 from keras.layers import SimpleRNN, Dense
 
 import numpy as np
@@ -52,6 +53,9 @@ if __name__ == "__main__":
     rev_ner_id = dict(enumerate(set(tmp_y), start=2))
     ner_idx = {v: k for k, v in rev_ner_id.items()}
 
+    nb_classes = len(set(tmp_y))
+    print(nb_classes)
+
     M = len(vocabulary) + 2
     print(M)
     N = 100
@@ -86,10 +90,9 @@ if __name__ == "__main__":
         Y_idx.append(y_idx)
 
     padded_x = pad_sequences(X_idx, maxlen=150)
-    print(padded_x)
-
     padded_y = pad_sequences(Y_idx, maxlen=150)
-    print(padded_y)
+
+    y_train = to_categorical(padded_y, num_classes=nb_classes + 2)
 
     model = models.Sequential()
     model.add(layers.Embedding(
@@ -101,7 +104,7 @@ if __name__ == "__main__":
     # model.layers[0].set_weights((matrix))
 
     model.add(SimpleRNN(100, return_sequences=True))
-    model.add(Dense(len(ner_idx), activation='softmax'))
+    model.add(Dense(nb_classes + 2, activation='softmax'))
 
     model.compile(loss='categorical_crossentropy',
                 optimizer='rmsprop',
@@ -109,4 +112,4 @@ if __name__ == "__main__":
     
     model.summary()
 
-    model.fit(X, Y, epochs=2, batch_size=128)
+    model.fit(padded_x, y_train, epochs=2, batch_size=128)
