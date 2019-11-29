@@ -30,6 +30,19 @@ def vocabulary(train_dict, dictionizer):
         vocabulary_words.append(d.lower())
     return set(vocabulary_words)
 
+def to_index(seq, idx):
+    tmp_seq = []
+    for s in seq:
+        s_idx = []
+        for l in s:
+            #Get the value, if not in word_idx => 0 else value
+            if l in idx:
+                s_idx.append(word_idx[l])
+            else:
+                s_idx.append(0)
+        tmp_seq.append(s_idx)
+    print(tmp_seq)
+
 if __name__ == "__main__":
     train_sentences, dev_sentences, test_sentences, column_names = load_conll2003_en()
 
@@ -68,26 +81,26 @@ if __name__ == "__main__":
     dict_vect = DictVectorizer(sparse=False)
 
     #Ta X och gör om till index-värden
-    X_idx = []
-    for x in X:
-        x_idx = []
-        for l in x:
-            #Get the value, if not in word_idx => 0 else value
-            if l in word_idx:
-                x_idx.append(word_idx[l])
-            else:
-                x_idx.append(0)
-        X_idx.append(x_idx)
+    X_idx = to_index(X, word_idx)
+    # for x in X:
+        # x_idx = []
+        # for l in x:
+            # #Get the value, if not in word_idx => 0 else value
+            # if l in word_idx:
+                # x_idx.append(word_idx[l])
+            # else:
+                # x_idx.append(0)
+        # X_idx.append(x_idx)
 
-    Y_idx = []
-    for y in Y:
-        y_idx = []
-        for l in y:
-            if l in ner_idx:
-                y_idx.append(ner_idx[l])
-            else:
-                y_idx.append(0)
-        Y_idx.append(y_idx)
+    Y_idx = to_index(Y, ner_idx)
+    # for y in Y:
+        # y_idx = []
+        # for l in y:
+            # if l in ner_idx:
+                # y_idx.append(ner_idx[l])
+            # else:
+                # y_idx.append(0)
+        # Y_idx.append(y_idx)
 
     padded_x = pad_sequences(X_idx, maxlen=150)
     padded_y = pad_sequences(Y_idx, maxlen=150)
