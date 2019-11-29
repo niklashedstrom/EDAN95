@@ -6,7 +6,7 @@ from keras.preprocessing.sequence import pad_sequences
 
 from keras import models, layers
 from keras.utils import to_categorical
-from keras.layers import SimpleRNN, Dense
+from keras.layers import LSTM, Bidirectional, SimpleRNN, Dense
 
 import numpy as np
 
@@ -15,10 +15,10 @@ def build_sequences(dic):
     for sentence in dic:
         x, y = [], []
         for word in sentence:
-            x += [word['form']]
-            y += [word['ner']]
-        X += [x]
-        Y += [y]
+            x.append(word['form'].lower())
+            y.append(word['ner'])
+        X.append(x)
+        Y.append(y)
     return X,Y
 
 def vocabulary(train_dict, dictionizer):
@@ -27,8 +27,8 @@ def vocabulary(train_dict, dictionizer):
         for d in dic:
             vocabulary_words.append(d['form'].lower())
     for d in dictionizer:
-        vocabulary_words.append(d.lower())
-    return set(vocabulary_words)
+        vocabulary_words.append(d)
+    return sorted(list(set(vocabulary_words)))
 
 def to_index(seq, idx):
     tmp_seq = []
@@ -37,17 +37,19 @@ def to_index(seq, idx):
         for l in s:
             #Get the value, if not in word_idx => 0 else value
             if l in idx:
-                s_idx.append(word_idx[l])
+                s_idx.append(idx[l])
             else:
                 s_idx.append(0)
         tmp_seq.append(s_idx)
-    print(tmp_seq)
+    return tmp_seq
 
 if __name__ == "__main__":
     train_sentences, dev_sentences, test_sentences, column_names = load_conll2003_en()
 
     conll_dict = CoNLLDictorizer(column_names, col_sep=' +')
     train_dict = conll_dict.transform(train_sentences)
+    test_dict = conll_dict.transform(test_sentences)
+
 
     X, Y = build_sequences(train_dict)
 
@@ -55,22 +57,24 @@ if __name__ == "__main__":
 
     vocabulary = vocabulary(train_dict, dic)
 
-    tmp_y = []
-    for y in Y: 
-        for y_i in y:
-            tmp_y.append(y_i)
+    #tmp_y = []
+    #for y in Y: 
+    #    for y_i in y:
+    #        tmp_y.append(y_i)
+
+    tmp_y = sorted(list(set([ner for sentence in Y for ner in sentence])))
 
     rev_word_idx = dict(enumerate(vocabulary, start=2))
     word_idx = {v: k for k, v in rev_word_idx.items()}
 
-    rev_ner_id = dict(enumerate(set(tmp_y), start=2))
+    rev_ner_id = dict(enumerate(tmp_y, start=2))
     ner_idx = {v: k for k, v in rev_ner_id.items()}
 
-    nb_classes = len(set(tmp_y))
+    nb_classes = len(tmp_y)
     print(nb_classes)
 
     M = len(vocabulary) + 2
-    print(M)
+    #print(M)
     N = 100
     matrix = np.random.rand(M, N)
 
@@ -78,29 +82,21 @@ if __name__ == "__main__":
         if word in dic.keys():
             matrix[word_idx[word]] = dic[word]
 
-    dict_vect = DictVectorizer(sparse=False)
+    #dict_vect = DictVectorizer(sparse=False)
+
+    dev_dict = conll_dict.transform(dev_sentences)
+    X_dev, Y_dev = build_sequences(dev_dict)
+    X_dev_i = to_index(X_dev, word_idx)
+    Y_dev_i = to_index(Y_dev, ner_idx)
+    X_dev_pad = pad_sequences(X_dev_i)
+    Y_dev_pad = pad_sequences(Y_dev_i)
+    Y_dev_cat = to_categorical(Y_dev_pad, num_classes=nb_classes + 2)
 
     #Ta X och gör om till index-värden
     X_idx = to_index(X, word_idx)
-    # for x in X:
-        # x_idx = []
-        # for l in x:
-            # #Get the value, if not in word_idx => 0 else value
-            # if l in word_idx:
-                # x_idx.append(word_idx[l])
-            # else:
-                # x_idx.append(0)
-        # X_idx.append(x_idx)
 
     Y_idx = to_index(Y, ner_idx)
-    # for y in Y:
-        # y_idx = []
-        # for l in y:
-            # if l in ner_idx:
-                # y_idx.append(ner_idx[l])
-            # else:
-                # y_idx.append(0)
-        # Y_idx.append(y_idx)
+
 
     padded_x = pad_sequences(X_idx, maxlen=150)
     padded_y = pad_sequences(Y_idx, maxlen=150)
@@ -114,9 +110,14 @@ if __name__ == "__main__":
         mask_zero=True,
         input_length=None
     ))
-    # model.layers[0].set_weights((matrix))
+    model.layers[0].set_weights([matrix])
+    model.layers[0].trainable = True
 
-    model.add(SimpleRNN(100, return_sequences=True))
+    #model.add(SimpleRNN(100, return_sequences=True))
+    #model.add(Bidirectional(LSTM(100, dropout=0.2, return_sequences=True)))
+    model.add(Bidirectional(LSTM(100, dropout=0.2, return_sequences=True)))
+    model.add(Dense(512, activation='relu'))
+    model.add(layers.Dropout(0.2))
     model.add(Dense(nb_classes + 2, activation='softmax'))
 
     model.compile(loss='categorical_crossentropy',
@@ -125,4 +126,53 @@ if __name__ == "__main__":
     
     model.summary()
 
-    model.fit(padded_x, y_train, epochs=2, batch_size=128)
+    model.fit(padded_x, y_train, epochs=2, batch_size=128, validation_data=(X_dev_pad, Y_dev_cat))
+
+
+    X_test, Y_test = build_sequences(test_dict)
+
+    X_test_idx = to_index(X_test, word_idx)
+    Y_test_idx = to_index(Y_test, ner_idx)
+
+    #print('X[0] test idx', X_test_idx[0])
+    #print('Y[0] test idx', Y_test_idx[0])
+
+    X_test_padded = pad_sequences(X_test_idx)
+    Y_test_padded = pad_sequences(Y_test_idx)
+
+    #print('X[0] test idx passed', X_test_padded[0])
+    #print('Y[0] test idx padded', Y_test_padded[0])
+
+    Y_test_padded_vectorized = to_categorical(Y_test_padded, num_classes=nb_classes + 2)
+
+    #print('Y[0] test idx padded vectorized', Y_test_padded_vectorized[0])
+    print(X_test_padded.shape)
+    print(Y_test_padded_vectorized.shape)
+
+    test_loss, test_acc = model.evaluate(X_test_padded, Y_test_padded_vectorized)
+    #print('Loss:', test_loss)
+    #print('Accuracy:', test_acc)
+
+    print('X_test', X_test[0])
+    print('X_test_padded', X_test_padded[0])
+    corpus_ner_predictions = model.predict(X_test_padded)
+    print('Y_test', Y_test[0])
+    print('Y_test_padded', Y_test_padded[0])
+    print('predictions', corpus_ner_predictions[0])
+
+    ner_pred_num = []
+    for sent_nbr, sent_ner_predictions in enumerate(corpus_ner_predictions):
+        ner_pred_num += [sent_ner_predictions[-len(X_test[sent_nbr]):]]
+    print(ner_pred_num[:2])
+
+    ner_pred = []
+    for sentence in ner_pred_num:
+        ner_pred_idx = list(map(np.argmax, sentence))
+        ner_pred_cat = list(map(rev_ner_id.get, ner_pred_idx))
+        ner_pred += [ner_pred_cat]
+    
+    result = open("result_ltsm_no_rnn.txt", "w+")
+    for id_s, sentence in enumerate(X_test):
+        for id_w, word in enumerate(sentence):
+            result.write(f"{word} {Y_test[id_s][id_w]} {ner_pred[id_s][id_w]}\n")
+    result.close()
