@@ -1,3 +1,7 @@
+"""
+Naive Bayesian Classifier
+"""
+
 class NBC:
     def __init__(self):
         pass

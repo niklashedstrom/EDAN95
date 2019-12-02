@@ -1,3 +1,7 @@
+"""
+Gaussian Naive Bayesian Classifier
+"""
+
 class GNB:
     def __init__(self):
         pass
