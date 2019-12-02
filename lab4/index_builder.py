@@ -111,13 +111,16 @@ if __name__ == "__main__":
         input_length=None
     ))
     model.layers[0].set_weights([matrix])
-    model.layers[0].trainable = True
+    model.layers[0].trainable = False
 
     #model.add(SimpleRNN(100, return_sequences=True))
-    #model.add(Bidirectional(LSTM(100, dropout=0.2, return_sequences=True)))
-    model.add(Bidirectional(LSTM(100, dropout=0.2, return_sequences=True)))
-    model.add(Dense(512, activation='relu'))
-    model.add(layers.Dropout(0.2))
+    model.add(layers.Dropout(0.25))
+    model.add(Bidirectional(LSTM(100, recurrent_dropout=0.25, return_sequences=True)))
+    model.add(layers.Dropout(0.25))
+    model.add(Bidirectional(LSTM(100, recurrent_dropout=0.25, return_sequences=True)))
+    model.add(layers.Dropout(0.25))
+    #model.add(Dense(512, activation='relu'))
+    #model.add(layers.Dropout(0.25))
     model.add(Dense(nb_classes + 2, activation='softmax'))
 
     model.compile(loss='categorical_crossentropy',
@@ -126,7 +129,7 @@ if __name__ == "__main__":
     
     model.summary()
 
-    model.fit(padded_x, y_train, epochs=2, batch_size=128, validation_data=(X_dev_pad, Y_dev_cat))
+    model.fit(padded_x, y_train, epochs=10, batch_size=128, validation_data=(X_dev_pad, Y_dev_cat))
 
 
     X_test, Y_test = build_sequences(test_dict)
