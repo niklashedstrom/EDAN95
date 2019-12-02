@@ -1,6 +1,6 @@
 from sklearn import metrics
 from sklearn.naive_bayes import GaussianNB
-from Handout_SkeletonAndDataNaiveBayes import MNIST
+import MNIST
 
 
 def main() :
