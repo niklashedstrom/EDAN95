@@ -15,7 +15,10 @@ if __name__ == "__main__":
     test_labels = digits.target[split:]
 
     em = EM()
-    em.fit(train_feature, train_label)
+
+    classes = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9}
+
+    em.em(train_feature, classes)
     
 
     # print("Classification report:\n%s\n"
