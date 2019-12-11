@@ -17,7 +17,7 @@ class EM:
         for c in classes:
             mu = np.random.rand(1, 64) * 16
             std = np.random.rand(1, 64) * 16
-            theta.append((1/len(classes), list(map(int, mu[0])), list(std[0])))
+            theta.append( [1/len(classes), list(map(int, mu[0])), list(std[0])] )
         
         # for 50 iterations: 
 
@@ -38,10 +38,20 @@ class EM:
         """
 
         r_k = []
+        new_mu_k = []
+        new_sigma_k = []
         for k in classes:
             r_k.append(sum(r_ik[i][k] for i in range(len(features))))
+            new_mu_k.append(sum(r_ik[i][k] * features[i] for i in range(len(features))))
+            new_sigma_k.append(sum(r_ik[i][k] * (np.array(features[i]) * np.transpose(np.array(features[i]))) for i in range(len(features))))
 
-        print(r_k)
+        new_pi = [i/len(features) for i in r_k]
+        for k in classes:
+            new_mu_k[k] = [mu/r_k[k] for mu in new_mu_k[k]]
+            new_sigma_k[k] = [(sigma/r_k[k]) - new_mu_k[k]*np.transpose(new_mu_k[k]) for sigma in new_sigma_k[k]]
+
+        # Count the diff 
+        # diff_mu = [np.abs(sum(new_mu_k[k]) - sum(theta[k][1])) for k in classes]
 
     def P(self, xi, theta_k):
         prod = 1.0
