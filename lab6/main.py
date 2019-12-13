@@ -18,7 +18,11 @@ if __name__ == "__main__":
 
     classes = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9}
 
-    em.em(train_feature, classes)
+    normalised_train_feat = []
+    for f in train_feature:
+        normalised_train_feat.append([i/16 for i in f])
+
+    em.em(normalised_train_feat, classes)
     
 
     # print("Classification report:\n%s\n"
