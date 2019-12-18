@@ -34,9 +34,9 @@ class EM:
             E-step
             """
 
-            print(self.pi[0])
-            print(self.means[0])
-            print(self.std[0])
+            # print(self.pi[0])
+            # print(self.means[0])
+            # print(self.std[0])
 
             r_ik = []
             for i in range(len(features)):
@@ -89,12 +89,18 @@ class EM:
                 
                 new_sigma_k.append(tmp_attr)
 
+
             new_pi = [i/len(features) for i in r_k]
             # print(new_sigma_k[0][0])
             # print(r_k)
             for k in classes:
                 new_mu_k[k] = [mu/r_k[k] for mu in new_mu_k[k]]
                 new_sigma_k[k] = [(sigma/r_k[k]) - np.multiply(new_mu_k[k],new_mu_k[k]) + 0.01 for sigma in new_sigma_k[k]]
+
+            self.std = [[(sum(r_ik[i][k] * np.multiply(features[i], features[i])) / r_k[k]) - np.multiply(new_mu_k[k], new_mu_k[k]) 
+                        for i in range(len(features))] for k in classes]
+            print(len(self.std))
+            print(len(self.std[0]))
             # Count the diff 
             # diff_mu = [np.abs(sum(new_mu_k[k]) - sum(theta[k][1])) for k in classes]
 
@@ -104,12 +110,12 @@ class EM:
             self.pi = new_pi
             self.means = new_mu_k
             # self.std = new_sigma_k
-            self.std = []
-            for k in classes:
-                diag = []
-                for j in range(64):
-                    diag.append(new_sigma_k[k][j][j])
-                self.std.append(diag)
+            # self.std = []
+            # for k in classes:
+                # diag = []
+                # for j in range(64):
+                    # diag.append(new_sigma_k[k][j][j])
+                # self.std.append(diag)
 
     def P(self, xi, mu_k, std_k):
         prod = 1.0
