@@ -178,10 +178,10 @@ class ID3DecisionTreeClassifier :
 
             # node['attribute'] = A
             for v in attributes[A]:
-                samp = [val for val in samples if v in val]
+                samp = [val for val in samples if v == val]
                 targ = []
                 for i in range(len(samples)):
-                    if v in samples[i]: 
+                    if v == samples[i]: 
                         targ.append(target_attributes[i])
                 if len(samp) == 0:
                     new_node = self.new_ID3_node()

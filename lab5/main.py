@@ -63,15 +63,15 @@ def main():
     # gnb = GNB()
     # gnb.fit(train_feature, train_label)
     # y_pred = gnb.predict(test_feature)
-    gnb = GaussianNB()
-    gnb.fit(train_feature, train_label)
-    y_pred = gnb.predict(test_feature)
+    # gnb = GaussianNB()
+    # gnb.fit(train_feature, train_label)
+    # y_pred = gnb.predict(test_feature)
+# 
+    # print("Classification report SKLearn GNB:\n%s\n"
+    #   % (metrics.classification_report(test_labels, y_pred)))
+    # print("Confusion matrix SKLearn GNB:\n%s" % metrics.confusion_matrix(test_labels, y_pred))
 
-    print("Classification report SKLearn GNB:\n%s\n"
-      % (metrics.classification_report(test_labels, y_pred)))
-    print("Confusion matrix SKLearn GNB:\n%s" % metrics.confusion_matrix(test_labels, y_pred))
-
-    ncc = GNB()
+    ncc = NCC()
     ncc.fit(train_feature, train_label)
     y_pred = ncc.predict(test_feature)
 
@@ -79,7 +79,7 @@ def main():
       % (metrics.classification_report(test_labels, y_pred)))
     print("Confusion matrix NCC:\n%s" % metrics.confusion_matrix(test_labels, y_pred))
 
-    ncc2 = GNB()
+    ncc2 = NCC()
     ncc2.fit(train_feature_mod, train_label_mod)
     y_pred_mod = ncc2.predict(test_feature_mod)
 
@@ -87,7 +87,7 @@ def main():
       % (metrics.classification_report(test_label_mod, y_pred_mod)))
     print("Confusion matrix NCC:\n%s" % metrics.confusion_matrix(test_label_mod, y_pred_mod))
 
-    ncc3 = GNB()
+    ncc3 = NCC()
     ncc3.fit(train_features_mnist, train_labels_mnist)
     y_pred_mnist = ncc3.predict(test_features_mnist)
 
