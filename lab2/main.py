@@ -1,5 +1,7 @@
 import ToyData as td
 import ID3
+import new_ID3
+import id3_working
 
 import numpy as np
 from sklearn import tree, metrics, datasets
@@ -22,10 +24,9 @@ def main():
     for i in range(64):
         attributes[i] = list(range(17))
 
-    print(attributes)
-
-    id3 = ID3.ID3DecisionTreeClassifier()
-
+    # id3 = new_ID3.ID3DecisionTreeClassifier()
+    id3 = id3_working.ID3DecisionTreeClassifier()
+    
     # for i in range(len(test_feature)):
     #     print(test_feature[i])
     #     print(test_label[i])
@@ -36,7 +37,7 @@ def main():
     print(myTree)
     plot = id3.make_dot_data()
     plot.render("testTree")
-    predicted = id3.predict(data2, myTree)
+    predicted = id3.predict(test_feature, myTree, attributes)
     print(predicted)
 
 

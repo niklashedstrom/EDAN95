@@ -57,29 +57,71 @@ class ID3DecisionTreeClassifier :
 
     # the entry point for the recursive ID3-algorithm, you need to fill in the calls to your recursive implementation
     def fit(self, data, target, attributes, classes):
+        root = self.new_ID3_node()
+        root['entropy'] = self.entropy(target)
+        root['classCounts'] = Counter(target)
+        root['samples'] = len(target)
+        root['nodes'] = {}
 
-        root = self.id3(data, target, attributes, -1, None, '')
+        if len(set(target)) == 1:
+            root['label'] = target[0]
+            self.add_node_to_graph(root)
+            return root
+        
+        if not attributes:
+            counter = Counter(target)
+            root['label'] = max(counter, key=counter.get)
+            self.add_node_to_graph(root)
+            return root
+        
+        info_gain = self.info_gain(self.entropy(target), data, target, attributes)
+        A = max(info_gain.items(), key=operator.itemgetter(1))[0]
 
+        remaining_attr = dict(attributes)
+        remaining_attr.pop(A, None)
+        root['attribute'] = A
+
+        for v in attributes[A]:
+            samp, targ = self.partition(data, target, v, attributes, A)
+            if len(samp) == 0:
+                leaf = self.new_ID3_node()
+                leaf['label'] = max(set(target), key=target.count)
+                leaf['samples'] = 0
+                leaf['classCounts'] = Counter(targ)
+                root['nodes'][v] = leaf
+                self.add_node_to_graph(leaf, root['id'])
+            else:
+                node = self.fit(samp, targ, remaining_attr, classes)
+                self.add_node_to_graph(node, root['id'])
+                root['nodes'][v] = node
+        self.add_node_to_graph(root)
         return root
 
     def predict(self, data, tree) :
         predicted = list()
-        for d in data:
-            predicted.append(self.find_label(d, tree, tree['label']))
 
+        # Not needed, just need to go through the tree to search for the highest info gain going down
+        # unitl we hit a label that's not None. 
+        # edges = set([(i.split()[0], i.split()[2]) for i in self.__dot.body if '->' in i])
+        # print(edges)
+
+        for d in data:
+            predicted.append(self.find_label(d, tree))
+
+        # fill in something more sensible here... root should become the output of the recursive tree creation
         return predicted
 
-    def find_label(self, data, tree, label):
+    def find_label(self, data, tree):
         # data = (d,d,d)
         # tree, bunch of nodes
-        if label != None:
-            return label
+        if not tree['nodes']:
+            return tree['label']
         else:
             for t in tree['nodes']:
                 if t in data:
-                    return self.find_label(data, tree['nodes'][t], tree['nodes'][t]['label'])
+                    return self.find_label(data, tree['nodes'][t])
     
-    def entropy(self, samples, target_attributes, attribute):
+    def entropy(self, target_attributes):
         node_counter = Counter(target_attributes)
         values = [int(i[1]) for i in node_counter.items()]
         total = sum([int(i[1]) for i in node_counter.items()])
@@ -109,91 +151,12 @@ class ID3DecisionTreeClassifier :
                 tot_sum = sum([int(i[1]) for i in tmp_dict[key].items()])
                 if tot_sum > 0:
                     for val in [int(i[1]) for i in tmp_dict[key].items()]:
+                        # print('val: {}, sum: {}, div: {}'.format(val, tot_sum, val/tot_sum))
                         if (val/tot_sum) != 0:
                             ent += (val/tot_sum) * np.log2(val/tot_sum)
                     tot_ent += -ent * tot_sum/len(samples)
             info_dict[a] = entropy-tot_ent
         return info_dict
-    
-    def add_node(self, node, parentnode, v):
-        if parentnode != None:
-            if parentnode['nodes'] == None:
-                parentnode['nodes'] = {v: node}
-            else:
-                parentnode['nodes'][v] = node
-
-    def id3(self, samples, target_attributes, attributes, parentid, parentnode, attr):
-        node = self.new_ID3_node()
-        # print(len(samples))
-        nodeCounter = Counter(target_attributes)
-        entro = self.entropy(samples, target_attributes, attributes)
-        
-        # print(attr)
-
-        # If all samples belong to one class <class_name>
-        # Return the single-node tree Root, with label = <class_name>.
-        cnt = 0
-        label = ''
-        for c in nodeCounter:
-            if nodeCounter[c] > 0:
-                cnt += 1
-                label = c
-        if cnt == 1:
-            node['label'] = label
-            node['samples'] = len(samples)
-            node['classCounts'] = nodeCounter
-            node['entropy'] = entro
-            # self.add_node(node, parentnode, attr)
-            self.add_node_to_graph(node, parentid)
-            return node
-
-        # If Attributes is empty, then
-        # Return the single node tree Root, with label = most common class value in Samples.
-        elif len(attributes) == 0:
-            max_val = -1
-            label = ''
-            for c in nodeCounter:
-                if nodeCounter[c] > max_val:
-                    max_val = nodeCounter[c]
-                    label = c
-            node['label'] = label
-            node['samples'] = len(samples)
-            node['classCounts'] = nodeCounter
-            node['entropy'] = entro
-            # self.add_node(node, parentnode, attr)
-            self.add_node_to_graph(node, parentid)
-            return node
-        else:
-            info_gain = self.info_gain(entro, samples, target_attributes, attributes)
-            A = max(info_gain.items(), key=operator.itemgetter(1))[0]
-
-            node['attribute'] = A
-            for v in attributes[A]:
-                # samp = [val for val in samples if val[A]==v]
-                # targ = []
-                # for i in range(len(samples)):
-                #     if v == samples[i][A]: 
-                #         targ.append(target_attributes[i])
-                samp, targ = self.partition(samples, target_attributes, v, attributes, A)
-                if len(samp) == 0:
-                    new_node = self.new_ID3_node()
-                    new_node['label'] = max(target_attributes)
-                    new_node['samples'] = len(samp)
-                    new_node['classCounts'] = nodeCounter
-                    # self.add_node(new_node, node, v)
-                    self.add_node_to_graph(new_node, node['id'])
-                    return new_node
-                else:
-                    node['attribute'] = A
-                    node['entropy'] = entro
-                    node['samples'] = len(samples)
-                    node['classCounts'] = nodeCounter
-                    if len(attributes) != 0:
-                        tmp_attr = dict([i for i in attributes.items() if i[0] != A])
-                    # self.add_node(node, parentnode, attr)
-                    self.add_node_to_graph(node, parentid)
-                    node['nodes'] = self.id3(samp, targ, tmp_attr, node['id'], node, v)
-        return node
 
     def partition(self,data,target,value, attributes, a):
         data_subset = []
