@@ -2,6 +2,7 @@ import ToyData as td
 import ID3
 import new_ID3
 import id3_working
+import ID3PO
 
 import numpy as np
 from sklearn import tree, metrics, datasets
@@ -25,7 +26,7 @@ def main():
         attributes[i] = list(range(17))
 
     # id3 = new_ID3.ID3DecisionTreeClassifier()
-    id3 = id3_working.ID3DecisionTreeClassifier()
+    id3 = ID3PO.ID3DecisionTreeClassifier()
     
     # for i in range(len(test_feature)):
     #     print(test_feature[i])

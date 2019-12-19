@@ -57,7 +57,7 @@ class EM2:
                 prob = []
                 gauss = 1
                 for i in range(len(f)):
-                    print(gauss)
+                    # print(gauss)
                     gauss *= self.P(f[i], self.mean[c][i], self.var[c][i])
                 prob.append(gauss)
             predicted.append(classes[np.argmax(prob)])

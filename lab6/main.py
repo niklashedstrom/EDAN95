@@ -3,7 +3,7 @@ from EM2 import EM2
 
 from sklearn import metrics
 from sklearn import datasets
-
+from sklearn.metrics import completeness_score, homogeneity_score
 
 if __name__ == "__main__":
     
@@ -30,3 +30,7 @@ if __name__ == "__main__":
     print("Classification report:\n%s\n"
       % (metrics.classification_report(train_label, y_pred)))
     print("Confusion matrix:\n%s" % metrics.confusion_matrix(train_label, y_pred))
+
+    print( completeness_score(train_label, y_pred) )
+
+    print( homogeneity_score(train_label, y_pred))
