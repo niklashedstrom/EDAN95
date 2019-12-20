@@ -24,13 +24,18 @@ if __name__ == "__main__":
         normalised_train_feat.append([i/16 for i in f])
 
     em.EM(normalised_train_feat, classes)
-    y_pred = em.predict(train_feature, classes)
+
+    norm_test_feat = []
+    for f in test_feature:
+        norm_test_feat.append([i/16 for i in f])
+
+    y_pred = em.predict(norm_test_feat, classes)
 
 
     print("Classification report:\n%s\n"
-      % (metrics.classification_report(train_label, y_pred)))
-    print("Confusion matrix:\n%s" % metrics.confusion_matrix(train_label, y_pred))
+      % (metrics.classification_report(test_labels, y_pred)))
+    print("Confusion matrix:\n%s" % metrics.confusion_matrix(test_labels, y_pred))
 
-    print( completeness_score(train_label, y_pred) )
+    print('Completeness: {}'.format( completeness_score(test_labels, y_pred) ))
 
-    print( homogeneity_score(train_label, y_pred))
+    print('homogeneity: {}'.format( homogeneity_score(test_labels, y_pred)))
