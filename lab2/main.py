@@ -47,17 +47,17 @@ def main():
     modified_digits_data = modify_data(digits.data)
     modified_digits_labels = digits.target
 
-    train_feature_mod = modified_digits_data[:split]
-    train_label_mod = modified_digits_labels[:split]
+    train_feature_mod = modified_digits_data[:split].tolist()
+    train_label_mod = modified_digits_labels[:split].tolist()
     test_feature_mod = modified_digits_data[split:]
     test_label_mod = modified_digits_labels[split:]
 
-        
+    print(attributes)    
 
     # myTree = id3.fit(data, target, attributes, classes)
     # myTree = id3.fit(train_feature, train_label, attributes, classes)
     myTree = id3.fit(train_feature_mod, train_label_mod, attributes, classes)
-    print(myTree)
+    # print(myTree)
     plot = id3.make_dot_data()
     plot.render("testTree")
     predicted = id3.predict(test_feature_mod, myTree, attributes)

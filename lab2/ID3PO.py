@@ -39,7 +39,7 @@ class ID3DecisionTreeClassifier :
             self.__dot.edge(str(parentid), str(node['id']))
             nodeString += "\n" + str(parentid) + " -> " + str(node['id'])
 
-        print(nodeString)
+        # print(nodeString)
 
         return
 
