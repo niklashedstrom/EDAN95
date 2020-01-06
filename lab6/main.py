@@ -23,7 +23,7 @@ if __name__ == "__main__":
     for f in train_feature:
         normalised_train_feat.append([i/16 for i in f])
 
-    em.EM(normalised_train_feat, classes)
+    em.EM(normalised_train_feat, train_label, classes)
 
     norm_test_feat = []
     for f in test_feature:
@@ -38,4 +38,4 @@ if __name__ == "__main__":
 
     print('Completeness: {}'.format( completeness_score(test_labels, y_pred) ))
 
-    print('homogeneity: {}'.format( homogeneity_score(test_labels, y_pred)))
+    print('Homogeneity: {}'.format( homogeneity_score(test_labels, y_pred)))

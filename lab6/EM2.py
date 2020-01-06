@@ -1,13 +1,15 @@
 import numpy as np
 import math
+from collections import Counter
 
 class EM2:
     def __init__(self):
         self.prob = []
         self.mean = []
         self.var = []
+        self.labels = {}
     
-    def EM(self, features, classes):
+    def EM(self, features, targets, classes):
         attr_len = len(features[0])
         N = len(features)
 
@@ -64,6 +66,25 @@ class EM2:
             self.var = [[sum([r_ik[i][k] * features[i][j] * features[i][j] 
                         for i in range(N)])/r_k[k] - np.multiply(self.mean[k], self.mean[k])[0] + 0.1
                         for j in range(attr_len)] for k in classes]
+        
+        # Label clusters
+        
+        cluster_idx = {n : [] for n in range(N)}
+
+        for i, x in enumerate(r_ik):
+            print(i)
+            print(x)
+            cluster = np.argmax(x)
+            print(cluster)
+            cluster_idx[cluster].append(targets[i])
+        for c in cluster_idx.keys():
+            cnt = Counter(cluster_idx[c])
+            print(cnt)
+            mc = cnt.most_common(1)
+            print(mc)
+            print(mc[0])
+            print(mc[0][0])
+            self.labels[c] = mc[0]
 
     def P(self, f, m, v):
         v += 0.1
@@ -88,7 +109,7 @@ class EM2:
                 prob.append(gauss)
             prob_norm = [p / sum(prob) for p in prob]
             # print(prob_norm)
-            predicted.append(classes[np.argmax(prob_norm)])
+            predicted.append(self.labels[np.argmax(prob_norm)])
             # print(probs)
             # predicted.append(np.argmax(probs))
         return predicted
