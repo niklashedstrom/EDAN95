@@ -31,6 +31,7 @@ if __name__ == "__main__":
 
     y_pred = em.predict(norm_test_feat, classes)
 
+    print(y_pred)
 
     print("Classification report:\n%s\n"
       % (metrics.classification_report(test_labels, y_pred)))
