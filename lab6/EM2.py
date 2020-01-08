@@ -17,7 +17,6 @@ class EM2:
         self.mean = [np.random.rand(1, attr_len)[0] for k in classes]
         self.var = [np.random.rand(1, attr_len)[0] + 0.1 for k in classes]
 
-        # index = np.random.randint(N, size=(1, 10))
         means = [[] for k in classes]
         actual_means = []
         for i in range(N):
@@ -26,7 +25,6 @@ class EM2:
             tot_val = np.zeros(attr_len)
             for feat in means_per_class:
                 for f in range(len(feat)):
-                    # print(f)
                     tot_val[f] += feat[f]
             actual_means.append([tot_val[i] / len(means_per_class) for i in range(len(tot_val))])
 
@@ -39,11 +37,13 @@ class EM2:
             variances[targets[i]].append(features[i])
         c = 0
         for var_per_class in variances:
-            print('g')
-            # print("hajdu {}".format(var_per_class))
             attr_vec = np.zeros(attr_len)
-            for v in range(len(var_per_class)):
-                attr_vec[v] = var_per_class[v] - 
+            for v in var_per_class:
+                for iv in range(len(v)):
+                    attr_vec[iv] += math.pow(v[iv] - actual_means[c][iv], 2)
+            c += 1
+            actual_variances.append([attr_vec[i] / len(var_per_class) for i in range(len(attr_vec))])
+        self.var = actual_variances
 
         for iterations in range(30):
             print(iterations)
